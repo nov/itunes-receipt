@@ -11,7 +11,7 @@ module Itunes
       end
     end
 
-    attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :original_transaction_id, :original_purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs
+    attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original
 
     def initialize(attributes = {})
       if attributes[:quantity]

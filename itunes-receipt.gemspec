@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'json', '>= 1.4.3'
   s.add_dependency 'rest-client', '>= 1.4'
   s.add_dependency 'activesupport', '>= 2.3'
+  s.add_dependency 'i18n'
   s.add_development_dependency 'rake', '>= 0.8'
   s.add_development_dependency 'rcov', '>= 0.9'
   s.add_development_dependency 'rspec', '>= 2'

@@ -1,3 +1,5 @@
+require 'fakeweb'
+
 module FakeJsonHelper
 
   def fake_json(expected, options = {})
@@ -18,3 +20,6 @@ module FakeJsonHelper
   end
 
 end
+
+FakeWeb.allow_net_connect = false
+include FakeJsonHelper
