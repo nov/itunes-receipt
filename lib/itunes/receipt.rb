@@ -44,7 +44,7 @@ module Itunes
       when 0
         new response[:receipt]
       else
-        raise VerificationFailed.new response
+        raise VerificationFailed.new(response)
       end
     end
   end
