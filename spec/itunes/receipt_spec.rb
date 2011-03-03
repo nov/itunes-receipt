@@ -5,7 +5,7 @@ describe Itunes::Receipt do
   describe '.verify!' do
     it 'should support sandbox mode' do
       sandbox_mode do
-        lambda do
+        expect do
           Itunes::Receipt.verify! 'receipt-data'
         end.should post_to Itunes::ENDPOINT[:sandbox]
       end
@@ -17,7 +17,7 @@ describe Itunes::Receipt do
       end
 
       it 'should raise VerificationFailed' do
-        lambda do
+        expect do
           Itunes::Receipt.verify! 'invalid'
         end.should raise_error Itunes::Receipt::VerificationFailed
       end
