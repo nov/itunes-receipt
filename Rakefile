@@ -4,9 +4,16 @@ Bundler::GemHelper.install_tasks
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)
 
-RSpec::Core::RakeTask.new(:rcov) do |spec|
-  spec.rcov = true
-  spec.rcov_opts = ['-Ilib -Ispec --exclude spec,gems']
+namespace :cover_me do
+  desc "Generates and opens code coverage report."
+  task :report do
+    require 'cover_me'
+    CoverMe.complete!
+  end
+end
+
+task :spec do
+  Rake::Task['cover_me:report'].invoke
 end
 
 task :default => :spec
