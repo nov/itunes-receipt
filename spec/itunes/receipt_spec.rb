@@ -40,6 +40,8 @@ describe Itunes::Receipt do
         receipt.original.quantity.should be_nil
         receipt.original.transaction_id.should == '1000000001479608'
         receipt.original.purchase_date.should == Time.utc(2011, 2, 17, 6, 20, 57)
+        receipt.expires_date.should be_nil
+        receipt.receipt_data.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -61,12 +63,13 @@ describe Itunes::Receipt do
         receipt.product_id.should == 'com.notkeepingitreal.fizzbuzz.subscription.autorenew1m'
         receipt.transaction_id.should == '1000000055076747'
         receipt.purchase_date.should == Time.utc(2012, 10, 13, 19, 40, 8)
-        receipt.expires_date.should == Time.utc(2012, 10, 13, 19, 45, 8)
         receipt.bid.should == 'com.notkeepingitreal.fizzbuzz'
         receipt.bvrs.should == '1.0'
         receipt.original.quantity.should be_nil
         receipt.original.transaction_id.should == original_transaction_id
         receipt.original.purchase_date.should == original_purchase_date
+        receipt.expires_date.should == Time.utc(2012, 10, 13, 19, 45, 8)
+        receipt.receipt_data.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -84,6 +87,7 @@ describe Itunes::Receipt do
         latest.original.quantity.should be_nil
         latest.original.transaction_id.should == original_transaction_id
         latest.original.purchase_date.should == original_purchase_date
+        latest.receipt_data.should == 'junk='
        
         # Those attributes are not returned from iTunes Connect Sandbox
         latest.app_item_id.should be_nil
