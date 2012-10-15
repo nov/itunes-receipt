@@ -28,4 +28,12 @@ module Itunes
   end
   self.sandbox = false
 
+  def self.shared_secret
+    @@shared_secret
+  end
+  def self.shared_secret=(shared_secret)
+    @@shared_secret = shared_secret
+  end
+  self.shared_secret = nil
+
 end
