@@ -45,9 +45,11 @@ module Itunes
     end
 
     def self.verify!(receipt_data)
+      request_data = {:'receipt-data' => receipt_data}
+      request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
       response = RestClient.post(
         Itunes.endpoint,
-        {:'receipt-data' => receipt_data}.to_json
+        request_data.to_json
       )
       response = JSON.parse(response).with_indifferent_access
       case response[:status]
