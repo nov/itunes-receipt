@@ -49,6 +49,10 @@ module Itunes
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
     end
 
+    def sandbox?
+      itunes_env == :sandbox
+    end
+
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
       request_data = {:'receipt-data' => receipt_data}
       request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
