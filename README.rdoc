@@ -6,6 +6,27 @@ Handle iTunes In App Purchase Receipt Verification.
 
   gem install itunes-receipt
 
+== Usage
+
+   require 'itunes/receipt'
+   
+   # pass Base64 encoded raw receipt data which you received from your iOS app
+   receipt = Itunes::Receipt.verify! 'ewoJInNpZ25hdHVyZSIgPSAi...'
+   receipt.product_id     # => 'com.example.products.100gems'
+   receipt.transaction_id # => '1234567890'
+    :
+
+See lib/itunes/receipt.rb for more attributes.
+
+If you want to accept iTunes sandbox receipts, do like this.
+With <code>allow_sandbox_receipt</code> option specified, this gem post given receipt data to iTunes production first, and when iTunes production tells it's sandbox receipt, re-send it to iTunes sandbox again automatically.
+Without this option, this gem just raises an exception.
+
+  receipt = Itunes::Receipt.verify! 'ewoJInNpZ25hdHVyZSIgPSAi...', :allow_sandbox_receipt
+
+If you want to accept ONLY iTunes sandbox receipts (in your stable server etc.), call <code>Itunes.sandbox!</code> somewhere before you call <code>Itunes::Receipt.verify!</code>.
+Then all verification call after that goes to iTunes sandbox, until you do <code>Itunes.sandbox = false</code>.
+
 == Note on Patches/Pull Requests
 
 * Fork the project.
