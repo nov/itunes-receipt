@@ -14,7 +14,7 @@ module Itunes
 
 
     # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
-    attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest
+    attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest, :itunes_env
 
     def initialize(attributes = {})
       receipt_attributes = attributes.with_indifferent_access[:receipt]
@@ -45,19 +45,28 @@ module Itunes
       end
       @expires_date = Time.at(receipt_attributes[:expires_date].to_i / 1000) if receipt_attributes[:expires_date]
       @receipt_data = attributes[:latest_receipt] if attributes[:receipt_type] == :latest # it feels wrong to include the receipt_data for the latest receipt on anything other than the latest receipt
+
+      @itunes_env = attributes[:itunes_env] || Itunes.env
     end
 
-    def self.verify!(receipt_data)
+    def self.verify!(receipt_data, allow_sandbox_receipt = false)
       request_data = {:'receipt-data' => receipt_data}
       request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
       response = post_to_endpoint(request_data)
       begin
         successful_response(response)
-      rescue SandboxReceiptReceived
+      rescue SandboxReceiptReceived => e
         # Retry with sandbox, as per:
         # http://developer.apple.com/library/ios/#technotes/tn2259/_index.html
         #   FAQ#16
-        successful_response(post_to_endpoint(request_data, Itunes::ENDPOINT[:sandbox]))
+        if allow_sandbox_receipt
+          sandbox_response = post_to_endpoint(request_data, Itunes::ENDPOINT[:sandbox])
+          successful_response(
+            sandbox_response.merge(:itunes_env => :sandbox)
+          )
+        else
+          raise e
+        end
       end
     end
 

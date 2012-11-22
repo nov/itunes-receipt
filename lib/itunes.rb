@@ -10,11 +10,11 @@ module Itunes
   }
 
   def self.endpoint
-    if sandbox?
-      ENDPOINT[:sandbox]
-    else
-      ENDPOINT[:production]
-    end
+    ENDPOINT[env]
+  end
+
+  def self.env
+    sandbox? ? :sandbox : :production
   end
 
   def self.sandbox?

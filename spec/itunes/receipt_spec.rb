@@ -48,10 +48,21 @@ describe Itunes::Receipt do
           end
         end
 
-        it 'should try and verify the receipt against the sandbox ' do
-          receipt = Itunes::Receipt.verify! 'sandboxed'
-          receipt.should be_instance_of Itunes::Receipt
-          receipt.transaction_id.should == '1000000001479608'
+        context 'when sandbox receipt accepted explicitly' do
+          it 'should try and verify the receipt against the sandbox ' do
+            receipt = Itunes::Receipt.verify! 'sandboxed', :allow_sandbox_receipt
+            receipt.should be_instance_of Itunes::Receipt
+            receipt.transaction_id.should == '1000000001479608'
+            receipt.itunes_env.should == :sandbox
+          end
+        end
+
+        context 'otherwise' do
+          it 'should raise SandboxReceiptReceived exception' do
+            expect do
+              Itunes::Receipt.verify! 'sandboxed'
+            end.to raise_error Itunes::Receipt::SandboxReceiptReceived
+          end
         end
       end
     end
@@ -75,6 +86,7 @@ describe Itunes::Receipt do
         receipt.original.purchase_date.should == Time.utc(2011, 2, 17, 6, 20, 57)
         receipt.expires_date.should be_nil
         receipt.receipt_data.should be_nil
+        receipt.itunes_env.should == :production
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
