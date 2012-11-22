@@ -23,6 +23,7 @@ With <code>allow_sandbox_receipt</code> option specified, this gem post given re
 Without this option, this gem just raises an exception.
 
   receipt = Itunes::Receipt.verify! 'ewoJInNpZ25hdHVyZSIgPSAi...', :allow_sandbox_receipt
+  receipt.sandbox? # => true/false
 
 If you want to accept ONLY iTunes sandbox receipts (in your stable server etc.), call <code>Itunes.sandbox!</code> somewhere before you call <code>Itunes::Receipt.verify!</code>.
 Then all verification call after that goes to iTunes sandbox, until you do <code>Itunes.sandbox = false</code>.
