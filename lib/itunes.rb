@@ -10,10 +10,10 @@ module Itunes
   }
 
   def self.endpoint
-    ENDPOINT[env]
+    ENDPOINT[itunes_env]
   end
 
-  def self.env
+  def self.itunes_env
     sandbox? ? :sandbox : :production
   end
 

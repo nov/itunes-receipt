@@ -46,7 +46,7 @@ module Itunes
       @expires_date = Time.at(receipt_attributes[:expires_date].to_i / 1000) if receipt_attributes[:expires_date]
       @receipt_data = attributes[:latest_receipt] if attributes[:receipt_type] == :latest # it feels wrong to include the receipt_data for the latest receipt on anything other than the latest receipt
 
-      @itunes_env = attributes[:itunes_env] || Itunes.env
+      @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
     end
 
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
