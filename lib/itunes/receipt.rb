@@ -10,6 +10,9 @@ module Itunes
       end
     end
 
+    class SandboxReceiptReceived < VerificationFailed; end;
+
+
     # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
     attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest
 
@@ -47,17 +50,37 @@ module Itunes
     def self.verify!(receipt_data)
       request_data = {:'receipt-data' => receipt_data}
       request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
+      response = post_to_endpoint(request_data)
+      begin
+        successful_response(response)
+      rescue SandboxReceiptReceived
+        # Retry with sandbox, as per:
+        # http://developer.apple.com/library/ios/#technotes/tn2259/_index.html
+        #   FAQ#16
+        successful_response(post_to_endpoint(request_data, Itunes::ENDPOINT[:sandbox]))
+      end
+    end
+
+    private
+
+    def self.post_to_endpoint(request_data, endpoint = Itunes.endpoint)
       response = RestClient.post(
-        Itunes.endpoint,
+        endpoint,
         request_data.to_json
       )
       response = JSON.parse(response).with_indifferent_access
+    end
+
+    def self.successful_response(response)
       case response[:status]
       when 0
         new response
+      when 21007
+        raise SandboxReceiptReceived.new(response)
       else
         raise VerificationFailed.new(response)
       end
     end
+
   end
 end

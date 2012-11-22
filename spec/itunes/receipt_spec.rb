@@ -39,6 +39,21 @@ describe Itunes::Receipt do
           Itunes::Receipt.verify! 'invalid'
         end.to raise_error Itunes::Receipt::VerificationFailed
       end
+
+      context 'due to a sandbox receipt reply' do
+        before do
+          fake_json :sandboxed
+          sandbox_mode do
+            fake_json :valid
+          end
+        end
+
+        it 'should try and verify the receipt against the sandbox ' do
+          receipt = Itunes::Receipt.verify! 'sandboxed'
+          receipt.should be_instance_of Itunes::Receipt
+          receipt.transaction_id.should == '1000000001479608'
+        end
+      end
     end
 
     context 'when valid' do
@@ -106,7 +121,7 @@ describe Itunes::Receipt do
         latest.original.transaction_id.should == original_transaction_id
         latest.original.purchase_date.should == original_purchase_date
         latest.receipt_data.should == 'junk='
-       
+
         # Those attributes are not returned from iTunes Connect Sandbox
         latest.app_item_id.should be_nil
         latest.version_external_identifier.should be_nil
