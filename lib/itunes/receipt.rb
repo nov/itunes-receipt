@@ -11,7 +11,16 @@ module Itunes
     end
 
     class SandboxReceiptReceived < VerificationFailed; end;
+    
+    class ReceiptServerOffline < VerificationFailed; end;
 
+    class ExpiredReceiptReceived < VerificationFailed
+      attr_reader :receipt
+      def initialize(attributes = {})
+        @receipt = attributes[:receipt]
+        super attributes
+      end
+    end
 
     # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
     attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest, :itunes_env
@@ -88,6 +97,10 @@ module Itunes
       case response[:status]
       when 0
         new response
+      when 21005
+        raise ReceiptServerOffline.new(response)
+      when 21006
+        raise ExpiredReceiptReceived.new(response)
       when 21007
         raise SandboxReceiptReceived.new(response)
       else
