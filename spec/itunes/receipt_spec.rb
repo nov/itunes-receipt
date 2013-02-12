@@ -54,6 +54,7 @@ describe Itunes::Receipt do
             receipt.should be_instance_of Itunes::Receipt
             receipt.transaction_id.should == '1000000001479608'
             receipt.itunes_env.should == :sandbox
+            receipt.sandbox?.should eq true
           end
         end
 
@@ -139,5 +140,33 @@ describe Itunes::Receipt do
         latest.version_external_identifier.should be_nil
       end
     end
+    
+    context 'when expired autorenew subscription' do
+      before do
+        fake_json :autorenew_subscription_expired
+      end
+
+      it 'should raise ExpiredReceiptReceived exception' do
+        expect do
+          Itunes::Receipt.verify! 'autorenew_subscription_expired'
+        end.to raise_error Itunes::Receipt::ExpiredReceiptReceived do |e|
+          e.receipt.should_not be_nil
+        end
+      end
+
+    end
+    
+    context 'when offline' do
+      before do
+        fake_json :offline
+      end
+
+      it 'should raise ReceiptServerOffline exception' do
+        expect do
+          Itunes::Receipt.verify! 'offline'
+        end.to raise_error Itunes::Receipt::ReceiptServerOffline
+      end
+    end
+    
   end
 end
