@@ -73,6 +73,11 @@ describe Itunes::Receipt do
         fake_json :valid
       end
 
+      it 'should not be an application receipt' do
+        receipt = Itunes::Receipt.verify! 'valid_application'
+        receipt.application_receipt?.should be_false
+      end
+
       it 'should return valid Receipt instance' do
         receipt = Itunes::Receipt.verify! 'valid'
         receipt.should be_instance_of Itunes::Receipt
@@ -85,6 +90,58 @@ describe Itunes::Receipt do
         receipt.original.quantity.should be_nil
         receipt.original.transaction_id.should == '1000000001479608'
         receipt.original.purchase_date.should == Time.utc(2011, 2, 17, 6, 20, 57)
+        receipt.expires_date.should be_nil
+        receipt.receipt_data.should be_nil
+        receipt.itunes_env.should == :production
+
+        # Those attributes are not returned from iTunes Connect Sandbox
+        receipt.app_item_id.should be_nil
+        receipt.version_external_identifier.should be_nil
+      end
+    end
+
+    context 'when application receipt' do
+      before do
+        fake_json :valid_application
+      end
+
+      it 'should be an application receipt' do
+        receipt = Itunes::Receipt.verify! 'valid_application'
+        receipt.application_receipt?.should be_true
+      end
+
+      it 'should return valid Receipt instance' do
+        receipt = Itunes::Receipt.verify! 'valid_application'
+        receipt.bundle_id.should == 'com.tekkinnovations.fars'
+        receipt.application_version.should == '1.80'
+        receipt.in_app.should be_instance_of Array
+
+        receipt.in_app[0].should be_instance_of Itunes::Receipt
+        receipt.in_app[0].quantity.should == 1
+        receipt.in_app[0].product_id.should == "com.tekkinnovations.fars.subscription.6.months"
+        receipt.in_app[0].transaction_id.should == "1000000091176126"
+        receipt.in_app[0].purchase_date.should == Time.utc(2013, 11, 26, 5, 58, 48)
+        receipt.in_app[0].original.purchase_date.should == Time.utc(2013, 10, 24, 4, 55, 56)
+
+        receipt.in_app[1].should be_instance_of Itunes::Receipt
+        receipt.in_app[1].quantity.should == 1
+        receipt.in_app[1].product_id.should == "com.tekkinnovations.fars.subscription.3.months"
+        receipt.in_app[1].transaction_id.should == "1000000091221097"
+        receipt.in_app[1].purchase_date.should == Time.utc(2013, 11, 26, 5, 58, 48)
+        receipt.in_app[1].original.purchase_date.should == Time.utc(2013, 10, 24, 9, 40, 22)
+
+        receipt.original.quantity.should be_nil
+        receipt.original.transaction_id.should be_nil
+        receipt.original.purchase_date.should == Time.utc(2013, 8, 1, 7, 00, 00)
+        receipt.original.application_version.should == '1.0'
+
+        receipt.should be_instance_of Itunes::Receipt
+        receipt.quantity.should be_nil
+        receipt.product_id.should be_nil
+        receipt.transaction_id.should be_nil
+        receipt.purchase_date.should be_nil
+        receipt.bid.should be_nil
+        receipt.bvrs.should be_nil
         receipt.expires_date.should be_nil
         receipt.receipt_data.should be_nil
         receipt.itunes_env.should == :production

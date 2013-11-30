@@ -25,6 +25,8 @@ module Itunes
     # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
     attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest, :itunes_env
 
+    attr_reader :bundle_id, :application_version, :in_app
+
     def initialize(attributes = {})
       receipt_attributes = attributes.with_indifferent_access[:receipt]
       if receipt_attributes[:quantity]
@@ -42,8 +44,16 @@ module Itunes
       if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
         @original = self.class.new(:receipt => {
           :transaction_id => receipt_attributes[:original_transaction_id],
-          :purchase_date => receipt_attributes[:original_purchase_date]
+          :purchase_date => receipt_attributes[:original_purchase_date],
+          :application_version => receipt_attributes[:original_application_version]
         })
+      end
+
+      @bundle_id = receipt_attributes[:bundle_id]
+      @application_version = receipt_attributes[:application_version]
+
+      if receipt_attributes[:in_app]
+        @in_app = receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
       end
 
       # autorenew subscription handling
@@ -56,6 +66,11 @@ module Itunes
       @receipt_data = attributes[:latest_receipt] if attributes[:receipt_type] == :latest # it feels wrong to include the receipt_data for the latest receipt on anything other than the latest receipt
 
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
+    end
+
+
+    def application_receipt?
+      !@bundle_id.nil?
     end
 
     def sandbox?
