@@ -23,9 +23,23 @@ module Itunes
     end
 
     # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
-    attr_reader :quantity, :product_id, :transaction_id, :purchase_date, :app_item_id, :version_external_identifier, :bid, :bvrs, :original, :expires_date, :receipt_data, :latest, :itunes_env
+    attr_reader :quantity, :product_id, :transaction_id, 
+                :is_trial_period,
+                :purchase_date, :purchase_date_ms, :purchase_date_pst,
+                :original_purchase_date, :original_purchase_date_ms, :original_purchase_date_pst, 
+                :original_transaction_id
+                
+    attr_reader :app_item_id, :version_external_identifier, :bid, :bvrs, :original, 
+                :expires_date, :receipt_data, :latest, :itunes_env
+                
+    attr_reader :adam_id, :application_version, :bundle_id, :download_id, :in_app,
+                :receipt_type, :request_date, :request_date_ms, :request_date_pst
 
-    attr_reader :bundle_id, :application_version, :in_app
+    # These attributes are not currently used
+    # attr_reader :purchase_date_ms, :purchase_date_pst,
+    #             :original_purchase_date_ms, :original_purchase_date_pst, 
+    #             :original, 
+    #             :request_date_ms, :request_date_pst
 
     def initialize(attributes = {})
       receipt_attributes = attributes.with_indifferent_access[:receipt]
@@ -41,6 +55,10 @@ module Itunes
       @version_external_identifier = receipt_attributes[:version_external_identifier]
       @bid = receipt_attributes[:bid]
       @bvrs = receipt_attributes[:bvrs]
+      @request_date = if receipt_attributes[:request_date]
+        Time.parse receipt_attributes[:request_date].sub('Etc/', '')
+      end
+      
       if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
         @original = self.class.new(:receipt => {
           :transaction_id => receipt_attributes[:original_transaction_id],
@@ -49,8 +67,14 @@ module Itunes
         })
       end
 
-      @bundle_id = receipt_attributes[:bundle_id]
+      @adam_id = receipt_attributes[:adam_id]
       @application_version = receipt_attributes[:application_version]
+      @bundle_id = receipt_attributes[:bundle_id]
+      @download_id = receipt_attributes[:download_id]
+
+      if receipt_attributes[:is_trial_period]
+        @is_trial_period = receipt_attributes[:is_trial_period]
+      end
 
       if receipt_attributes[:in_app]
         @in_app = receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
@@ -68,6 +92,29 @@ module Itunes
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
     end
 
+    def to_h
+      {
+        :quantity => @quantity,
+        :product_id => @product_id,
+        :transaction_id => @transaction_id,
+        :purchase_date => (@purchase_date rescue nil),
+        :original_transaction_id => (@original.transaction_id rescue nil),
+        :original_purchase_date => (@original.purchase_date rescue nil),
+        :is_trial_period => @is_trial_period,
+        # :app_item_id => @app_item_id,
+        # :version_external_identifier => @version_external_identifier,
+        # :bid => @bid,
+        # :bvrs => @bvrs,
+        # :expires_at => (@expires_at.httpdate rescue nil)
+      }.tap do |receipt_h| 
+        receipt_h[:application_version] = @application_version if @application_version.presence
+        receipt_h[:bundle_id] = @bundle_id if @bundle_id.presence
+      end
+    end
+
+    def to_json
+      self.to_h.to_json
+    end
 
     def application_receipt?
       !@bundle_id.nil?
