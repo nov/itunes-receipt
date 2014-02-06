@@ -1,6 +1,10 @@
-require 'cover_me'
-require 'rspec'
+require 'simplecov'
 
+SimpleCov.start do
+  add_filter 'spec'
+end
+
+require 'rspec'
 require 'itunes/receipt'
 require 'helpers/fake_json_helper'
 

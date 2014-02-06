@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', '>= 0.8'
   s.add_development_dependency 'rspec', '>= 2'
   s.add_development_dependency 'fakeweb', '>= 1.3.0'
-  s.add_development_dependency "cover_me", ">= 1.2.0"
+  s.add_development_dependency 'simplecov'
 end

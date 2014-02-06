@@ -11,7 +11,7 @@ module Itunes
     end
 
     class SandboxReceiptReceived < VerificationFailed; end;
-    
+
     class ReceiptServerOffline < VerificationFailed; end;
 
     class ExpiredReceiptReceived < VerificationFailed
@@ -22,98 +22,111 @@ module Itunes
       end
     end
 
-    # expires_date, receipt_data, and latest (receipt) will only appear for autorenew subscription products
-    attr_reader :quantity, :product_id, :transaction_id, 
-                :is_trial_period,
-                :purchase_date, :purchase_date_ms, :purchase_date_pst,
-                :original_purchase_date, :original_purchase_date_ms, :original_purchase_date_pst, 
-                :original_transaction_id
-                
-    attr_reader :app_item_id, :version_external_identifier, :bid, :bvrs, :original, 
-                :expires_date, :receipt_data, :latest, :itunes_env
-                
-    attr_reader :adam_id, :application_version, :bundle_id, :download_id, :in_app,
-                :receipt_type, :request_date, :request_date_ms, :request_date_pst
-
-    # These attributes are not currently used
-    # attr_reader :purchase_date_ms, :purchase_date_pst,
-    #             :original_purchase_date_ms, :original_purchase_date_pst, 
-    #             :original, 
-    #             :request_date_ms, :request_date_pst
+    attr_reader(
+      :adam_id,
+      :app_item_id,
+      :application_version,
+      :bid,
+      :bundle_id,
+      :bvrs,
+      :download_id,
+      :expires_date,
+      :in_app,
+      :is_trial_period,
+      :itunes_env,
+      :latest,
+      :original,
+      :product_id,
+      :purchase_date,
+      :purchase_date_ms,
+      :purchase_date_pst,
+      :quantity,
+      :receipt_data,
+      :request_date,
+      :request_date_ms,
+      :request_date_pst,
+      :transaction_id,
+      :version_external_identifier,
+    )
 
     def initialize(attributes = {})
       receipt_attributes = attributes.with_indifferent_access[:receipt]
-      if receipt_attributes[:quantity]
-        @quantity = receipt_attributes[:quantity].to_i
-      end
-      @product_id = receipt_attributes[:product_id]
-      @transaction_id = receipt_attributes[:transaction_id]
-      @purchase_date = if receipt_attributes[:purchase_date]
-        Time.parse receipt_attributes[:purchase_date].sub('Etc/', '')
-      end
+      @adam_id = receipt_attributes[:adam_id]
       @app_item_id = receipt_attributes[:app_item_id]
-      @version_external_identifier = receipt_attributes[:version_external_identifier]
+      @application_version = receipt_attributes[:application_version]
       @bid = receipt_attributes[:bid]
+      @bundle_id = receipt_attributes[:bundle_id]
       @bvrs = receipt_attributes[:bvrs]
-      @request_date = if receipt_attributes[:request_date]
-        Time.parse receipt_attributes[:request_date].sub('Etc/', '')
+      @download_id = receipt_attributes[:download_id]
+      @expires_date = if receipt_attributes[:expires_date]
+        Time.at(receipt_attributes[:expires_date].to_i / 1000)
       end
-      
-      if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
-        @original = self.class.new(:receipt => {
-          :transaction_id => receipt_attributes[:original_transaction_id],
-          :purchase_date => receipt_attributes[:original_purchase_date],
+      @in_app = if receipt_attributes[:in_app]
+        receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
+      end
+      @is_trial_period = if receipt_attributes[:is_trial_period]
+        receipt_attributes[:is_trial_period]
+      end
+      @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
+      @latest = if attributes[:latest_receipt_info]
+        full_receipt_data = attributes[:latest_receipt]
+        self.class.new(
+          :receipt        => attributes[:latest_receipt_info],
+          :latest_receipt => full_receipt_data,
+          :receipt_type   => :latest
+        )
+      end
+      @original = if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
+        self.class.new(:receipt => {
+          :transaction_id      => receipt_attributes[:original_transaction_id],
+          :purchase_date       => receipt_attributes[:original_purchase_date],
+          :purchase_date_ms    => receipt_attributes[:original_purchase_date_ms],
+          :purchase_date_pst   => receipt_attributes[:original_purchase_date_pst],
           :application_version => receipt_attributes[:original_application_version]
         })
       end
-
-      @adam_id = receipt_attributes[:adam_id]
-      @application_version = receipt_attributes[:application_version]
-      @bundle_id = receipt_attributes[:bundle_id]
-      @download_id = receipt_attributes[:download_id]
-
-      if receipt_attributes[:is_trial_period]
-        @is_trial_period = receipt_attributes[:is_trial_period]
+      @product_id = receipt_attributes[:product_id]
+      @purchase_date = if receipt_attributes[:purchase_date]
+        Time.parse receipt_attributes[:purchase_date].sub('Etc/GMT', 'GMT')
       end
-
-      if receipt_attributes[:in_app]
-        @in_app = receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
+      @purchase_date_ms = if receipt_attributes[:purchase_date_ms]
+        receipt_attributes[:purchase_date_ms].to_i
       end
-
-      # autorenew subscription handling
-      # attributes[:latest_receipt_info] and attributes[:latest_receipt] will be nil if you already have the receipt for the most recent renewal.
-      if attributes[:latest_receipt_info]
-        full_receipt_data = attributes[:latest_receipt] # should also be in the top-level hash if attributes[:latest_receipt_info] is there, but this won't break if it isn't
-        @latest = self.class.new(:receipt => attributes[:latest_receipt_info], :latest_receipt => full_receipt_data, :receipt_type => :latest)
+      @purchase_date_pst = if receipt_attributes[:purchase_date_pst]
+        Time.parse receipt_attributes[:purchase_date_pst].sub('America/Los_Angeles', 'PST')
       end
-      @expires_date = Time.at(receipt_attributes[:expires_date].to_i / 1000) if receipt_attributes[:expires_date]
-      @receipt_data = attributes[:latest_receipt] if attributes[:receipt_type] == :latest # it feels wrong to include the receipt_data for the latest receipt on anything other than the latest receipt
-
-      @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
+      @quantity = if receipt_attributes[:quantity]
+        receipt_attributes[:quantity].to_i
+      end
+      @receipt_data = if attributes[:receipt_type] == :latest
+        attributes[:latest_receipt]
+      end
+      @request_date = if receipt_attributes[:request_date]
+        Time.parse receipt_attributes[:request_date].sub('Etc/', '')
+      end
+      @request_date_ms = if receipt_attributes[:request_date_ms]
+        receipt_attributes[:request_date_ms].to_i
+      end
+      @request_date_pst = if receipt_attributes[:request_date_pst]
+        Time.parse receipt_attributes[:request_date_pst].sub('America/Los_Angeles', 'PST')
+      end
+      @transaction_id = receipt_attributes[:transaction_id]
+      @version_external_identifier = receipt_attributes[:version_external_identifier]
     end
 
-    def to_h
+    def as_json
       {
-        :quantity => @quantity,
-        :product_id => @product_id,
-        :transaction_id => @transaction_id,
-        :purchase_date => (@purchase_date rescue nil),
-        :original_transaction_id => (@original.transaction_id rescue nil),
-        :original_purchase_date => (@original.purchase_date rescue nil),
-        :is_trial_period => @is_trial_period,
-        # :app_item_id => @app_item_id,
-        # :version_external_identifier => @version_external_identifier,
-        # :bid => @bid,
-        # :bvrs => @bvrs,
-        # :expires_at => (@expires_at.httpdate rescue nil)
-      }.tap do |receipt_h| 
-        receipt_h[:application_version] = @application_version if @application_version.presence
-        receipt_h[:bundle_id] = @bundle_id if @bundle_id.presence
+        :quantity                => @quantity,
+        :product_id              => @product_id,
+        :transaction_id          => @transaction_id,
+        :purchase_date           => @purchase_date,
+        :original_transaction_id => @original.try(:transaction_id),
+        :original_purchase_date  => @original.try(:purchase_date),
+        :is_trial_period         => @is_trial_period
+      }.tap do |hash|
+        hash[:application_version] = @application_version if @application_version.present?
+        hash[:bundle_id]           = @bundle_id           if @bundle_id.present?
       end
-    end
-
-    def to_json
-      self.to_h.to_json
     end
 
     def application_receipt?
