@@ -8,7 +8,7 @@ namespace :coverage do
   desc "Open coverage report"
   task :report do
     require 'simplecov'
-    `open "#{File.join SimpleCov.coverage_path, 'index.html' }"`
+    `open "#{File.join SimpleCov.coverage_path, 'index.html'}"`
   end
 end
 
