@@ -72,7 +72,7 @@ module Itunes
         full_receipt_data = attributes[:latest_receipt]
         attributes[:latest_receipt_info] = [attributes[:latest_receipt_info]] unless attributes[:latest_receipt_info].respond_to?(:last)
         self.class.new(
-          :receipt        => attributes[:latest_receipt_info],
+          :receipt        => attributes[:latest_receipt_info].last,
           :latest_receipt => full_receipt_data,
           :receipt_type   => :latest
         )
