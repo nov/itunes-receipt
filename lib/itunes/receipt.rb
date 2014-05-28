@@ -70,6 +70,7 @@ module Itunes
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
       @latest = if attributes[:latest_receipt_info]
         full_receipt_data = attributes[:latest_receipt]
+        attributes[:latest_receipt_info] = [attributes[:latest_receipt_info]] unless attributes[:latest_receipt_info].respond_to?(:last)
         self.class.new(
           :receipt        => attributes[:latest_receipt_info],
           :latest_receipt => full_receipt_data,
