@@ -47,6 +47,7 @@ module Itunes
       :request_date_pst,
       :transaction_id,
       :version_external_identifier,
+      :web_order_line_item_id
     )
 
     def initialize(attributes = {})
@@ -115,6 +116,7 @@ module Itunes
       end
       @transaction_id = receipt_attributes[:transaction_id]
       @version_external_identifier = receipt_attributes[:version_external_identifier]
+      @web_order_line_item_id = receipt_attributes[:web_order_line_item_id]
     end
 
     def application_receipt?
