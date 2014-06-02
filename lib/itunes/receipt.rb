@@ -47,6 +47,7 @@ module Itunes
       :request_date_pst,
       :transaction_id,
       :version_external_identifier,
+      :web_order_line_item_id
     )
 
     def initialize(attributes = {})
@@ -59,7 +60,8 @@ module Itunes
       @bvrs = receipt_attributes[:bvrs]
       @download_id = receipt_attributes[:download_id]
       @expires_date = if receipt_attributes[:expires_date]
-        Time.at(receipt_attributes[:expires_date].to_i / 1000)
+        # Time.at(receipt_attributes[:expires_date].to_i / 1000)
+        Time.parse receipt_attributes[:expires_date].sub('Etc/GMT', 'GMT')
       end
       @in_app = if receipt_attributes[:in_app]
         receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
@@ -70,11 +72,14 @@ module Itunes
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
       @latest = if attributes[:latest_receipt_info]
         full_receipt_data = attributes[:latest_receipt]
-        self.class.new(
-          :receipt        => attributes[:latest_receipt_info],
-          :latest_receipt => full_receipt_data,
-          :receipt_type   => :latest
-        )
+        attributes[:latest_receipt_info] = [attributes[:latest_receipt_info]] unless attributes[:latest_receipt_info].respond_to?(:map)
+        attributes[:latest_receipt_info].map do |lr|
+          self.class.new(
+            :receipt        => lr,
+            :latest_receipt => full_receipt_data,
+            :receipt_type   => :latest
+          )
+        end
       end
       @original = if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
         self.class.new(:receipt => {
@@ -112,6 +117,7 @@ module Itunes
       end
       @transaction_id = receipt_attributes[:transaction_id]
       @version_external_identifier = receipt_attributes[:version_external_identifier]
+      @web_order_line_item_id = receipt_attributes[:web_order_line_item_id]
     end
 
     def application_receipt?
