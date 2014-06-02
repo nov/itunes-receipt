@@ -178,7 +178,7 @@ describe Itunes::Receipt do
         receipt.app_item_id.should be_nil
         receipt.version_external_identifier.should be_nil
 
-        latest = receipt.latest
+        latest = receipt.latest.first
         latest.should be_instance_of Itunes::Receipt
         latest.quantity == 1
         latest.product_id.should == 'com.notkeepingitreal.fizzbuzz.subscription.autorenew1m'
