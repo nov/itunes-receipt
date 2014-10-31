@@ -68,13 +68,21 @@ module Itunes
         receipt_attributes[:is_trial_period]
       end
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
-      @latest = if attributes[:latest_receipt_info]
-        full_receipt_data = attributes[:latest_receipt]
+      @latest = case attributes[:latest_receipt_info]
+      when Hash
         self.class.new(
           :receipt        => attributes[:latest_receipt_info],
-          :latest_receipt => full_receipt_data,
+          :latest_receipt => attributes[:latest_receipt],
           :receipt_type   => :latest
         )
+      when Array
+        attributes[:latest_receipt_info].collect do |latest_receipt_info|
+          self.class.new(
+            :receipt        => latest_receipt_info,
+            :latest_receipt => attributes[:latest_receipt],
+            :receipt_type   => :latest
+          )
+        end
       end
       @original = if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
         self.class.new(:receipt => {
