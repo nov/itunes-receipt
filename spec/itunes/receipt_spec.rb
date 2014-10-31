@@ -197,7 +197,7 @@ describe Itunes::Receipt do
         latest.version_external_identifier.should be_nil
       end
     end
-    
+
     context 'when expired autorenew subscription' do
       before do
         fake_json :autorenew_subscription_expired
@@ -212,7 +212,7 @@ describe Itunes::Receipt do
       end
 
     end
-    
+
     context 'when offline' do
       before do
         fake_json :offline
@@ -224,6 +224,29 @@ describe Itunes::Receipt do
         end.to raise_error Itunes::Receipt::ReceiptServerOffline
       end
     end
-    
+
+    describe '#latest' do
+      let(:receipt) { Itunes::Receipt.verify! 'receipt-data' }
+      subject { receipt.latest }
+
+      context 'when latest_receipt_info is a Hash' do
+        before do
+          fake_json :autorenew_subscription
+        end
+        it { should be_a Itunes::Receipt }
+      end
+
+      context 'when latest_receipt_info is an Array' do
+        before do
+          fake_json :array_of_latest_receipt_info
+        end
+        it { should be_a Array }
+        it 'should include only Itunes::Receipt' do
+          receipt.latest.each do |element|
+            element.should be_a Itunes::Receipt
+          end
+        end
+      end
+    end
   end
 end
