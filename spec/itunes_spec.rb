@@ -9,12 +9,12 @@ describe Itunes do
 
     context 'sandbox' do
       it 'should be production by default' do
-        Itunes.sandbox?.should be_false
+        Itunes.sandbox?.should == false
       end
 
       it 'should be settable' do
         Itunes.sandbox!
-        Itunes.sandbox?.should be_true
+        Itunes.sandbox?.should == true
       end
     end
 

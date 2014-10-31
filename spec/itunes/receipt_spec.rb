@@ -75,7 +75,7 @@ describe Itunes::Receipt do
 
       it 'should not be an application receipt' do
         receipt = Itunes::Receipt.verify! 'valid_application'
-        receipt.application_receipt?.should be_false
+        receipt.application_receipt?.should == false
       end
 
       it 'should return valid Receipt instance' do
@@ -107,7 +107,7 @@ describe Itunes::Receipt do
 
       it 'should be an application receipt' do
         receipt = Itunes::Receipt.verify! 'valid_application'
-        receipt.application_receipt?.should be_true
+        receipt.application_receipt?.should == true
       end
 
       it 'should return valid Receipt instance' do
