@@ -65,7 +65,7 @@ module Itunes
         receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
       end
       @is_trial_period = if receipt_attributes[:is_trial_period]
-        receipt_attributes[:is_trial_period]
+        receipt_attributes[:is_trial_period] == "true"
       end
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
       @latest = case attributes[:latest_receipt_info]
