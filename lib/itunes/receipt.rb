@@ -42,7 +42,7 @@ module Itunes
       :receipt_data,
       :request_date,
       :transaction_id,
-      :version_external_identifier,
+      :version_external_identifier
     )
 
     def initialize(attributes = {})
@@ -70,7 +70,7 @@ module Itunes
           receipt_type: :latest
         )
       when Array
-        attributes[:latest_receipt_info].collect do |latest_receipt_info|
+        attributes[:latest_receipt_info].map do |latest_receipt_info|
           self.class.new(
             receipt: latest_receipt_info,
             latest_receipt: attributes[:latest_receipt],
@@ -90,9 +90,7 @@ module Itunes
       @product_id = receipt_attributes[:product_id]
       @purchase_date = Time.parse(receipt_attributes[:purchase_date]) if receipt_attributes[:purchase_date]
       @quantity = receipt_attributes[:quantity].to_i if receipt_attributes[:quantity]
-      @receipt_data = if attributes[:receipt_type] == :latest
-        attributes[:latest_receipt]
-      end
+      @receipt_data = attributes[:latest_receipt] if attributes[:receipt_type] == :latest
       @request_date = Time.parse (receipt_attributes[:request_date]) if receipt_attributes[:request_date]
       @transaction_id = receipt_attributes[:transaction_id]
       @version_external_identifier = receipt_attributes[:version_external_identifier]
@@ -107,7 +105,7 @@ module Itunes
     end
 
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
-      request_data = {:'receipt-data' => receipt_data}
+      request_data = { :'receipt-data' => receipt_data }
       request_data.merge!(password: Itunes.shared_secret) if Itunes.shared_secret
       response = post_to_endpoint(request_data)
       begin
@@ -131,7 +129,8 @@ module Itunes
         endpoint,
         request_data.to_json
       )
-      response = JSON.parse(response).with_indifferent_access
+
+      JSON.parse(response).with_indifferent_access
     end
 
     def self.successful_response(response)
