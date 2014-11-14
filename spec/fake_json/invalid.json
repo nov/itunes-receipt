@@ -1,1 +1,4 @@
-{"status":21002, "exception":"java.lang.IllegalArgumentException: propertyListFromString parsed an object, but there's still more text in the string. A plist should contain only one top-level object. Line number: 6, column: 1."}
+{
+    "status":21002,
+    "exception":"java.lang.IllegalArgumentException: propertyListFromString parsed an object, but there's still more text in the string. A plist should contain only one top-level object. Line number: 6, column: 1."
+}
