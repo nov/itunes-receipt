@@ -58,9 +58,7 @@ module Itunes
       @bundle_id = receipt_attributes[:bundle_id]
       @bvrs = receipt_attributes[:bvrs]
       @download_id = receipt_attributes[:download_id]
-      @expires_date = if receipt_attributes[:expires_date]
-        Time.at(receipt_attributes[:expires_date].to_i / 1000)
-      end
+      @expires_date = Time.parse(receipt_attributes[:expires_date]) if receipt_attributes[:expires_date]
       @in_app = if receipt_attributes[:in_app]
         receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
       end
@@ -94,30 +92,12 @@ module Itunes
         })
       end
       @product_id = receipt_attributes[:product_id]
-      @purchase_date = if receipt_attributes[:purchase_date]
-        Time.parse receipt_attributes[:purchase_date].sub('Etc/GMT', 'GMT')
-      end
-      @purchase_date_ms = if receipt_attributes[:purchase_date_ms]
-        receipt_attributes[:purchase_date_ms].to_i
-      end
-      @purchase_date_pst = if receipt_attributes[:purchase_date_pst]
-        Time.parse receipt_attributes[:purchase_date_pst].sub('America/Los_Angeles', 'PST')
-      end
-      @quantity = if receipt_attributes[:quantity]
-        receipt_attributes[:quantity].to_i
-      end
+      @purchase_date = Time.parse(receipt_attributes[:purchase_date]) if receipt_attributes[:purchase_date]
+      @quantity = receipt_attributes[:quantity].to_i if receipt_attributes[:quantity]
       @receipt_data = if attributes[:receipt_type] == :latest
         attributes[:latest_receipt]
       end
-      @request_date = if receipt_attributes[:request_date]
-        Time.parse receipt_attributes[:request_date].sub('Etc/', '')
-      end
-      @request_date_ms = if receipt_attributes[:request_date_ms]
-        receipt_attributes[:request_date_ms].to_i
-      end
-      @request_date_pst = if receipt_attributes[:request_date_pst]
-        Time.parse receipt_attributes[:request_date_pst].sub('America/Los_Angeles', 'PST')
-      end
+      @request_date = Time.parse (receipt_attributes[:request_date]) if receipt_attributes[:request_date]
       @transaction_id = receipt_attributes[:transaction_id]
       @version_external_identifier = receipt_attributes[:version_external_identifier]
     end
