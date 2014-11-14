@@ -38,13 +38,9 @@ module Itunes
       :original,
       :product_id,
       :purchase_date,
-      :purchase_date_ms,
-      :purchase_date_pst,
       :quantity,
       :receipt_data,
       :request_date,
-      :request_date_ms,
-      :request_date_pst,
       :transaction_id,
       :version_external_identifier,
     )
@@ -69,27 +65,27 @@ module Itunes
       @latest = case attributes[:latest_receipt_info]
       when Hash
         self.class.new(
-          :receipt        => attributes[:latest_receipt_info],
-          :latest_receipt => attributes[:latest_receipt],
-          :receipt_type   => :latest
+          receipt: attributes[:latest_receipt_info],
+          latest_receipt: attributes[:latest_receipt],
+          receipt_type: :latest
         )
       when Array
         attributes[:latest_receipt_info].collect do |latest_receipt_info|
           self.class.new(
-            :receipt        => latest_receipt_info,
-            :latest_receipt => attributes[:latest_receipt],
-            :receipt_type   => :latest
+            receipt: latest_receipt_info,
+            latest_receipt: attributes[:latest_receipt],
+            receipt_type: :latest
           )
         end
       end
       @original = if receipt_attributes[:original_transaction_id] || receipt_attributes[:original_purchase_date]
-        self.class.new(:receipt => {
-          :transaction_id      => receipt_attributes[:original_transaction_id],
-          :purchase_date       => receipt_attributes[:original_purchase_date],
-          :purchase_date_ms    => receipt_attributes[:original_purchase_date_ms],
-          :purchase_date_pst   => receipt_attributes[:original_purchase_date_pst],
-          :application_version => receipt_attributes[:original_application_version]
-        })
+        self.class.new(
+          receipt: {
+            transaction_id: receipt_attributes[:original_transaction_id],
+            purchase_date: receipt_attributes[:original_purchase_date],
+            application_version: receipt_attributes[:original_application_version]
+          }
+        )
       end
       @product_id = receipt_attributes[:product_id]
       @purchase_date = Time.parse(receipt_attributes[:purchase_date]) if receipt_attributes[:purchase_date]
@@ -112,7 +108,7 @@ module Itunes
 
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
       request_data = {:'receipt-data' => receipt_data}
-      request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
+      request_data.merge!(password: Itunes.shared_secret) if Itunes.shared_secret
       response = post_to_endpoint(request_data)
       begin
         successful_response(response)
@@ -123,16 +119,13 @@ module Itunes
         if allow_sandbox_receipt
           sandbox_response = post_to_endpoint(request_data, Itunes::ENDPOINT[:sandbox])
           successful_response(
-            sandbox_response.merge(:itunes_env => :sandbox)
+            sandbox_response.merge(itunes_env: :sandbox)
           )
         else
           raise e
         end
       end
     end
-
-    private
-
     def self.post_to_endpoint(request_data, endpoint = Itunes.endpoint)
       response = RestClient.post(
         endpoint,
@@ -155,6 +148,5 @@ module Itunes
         raise VerificationFailed.new(response)
       end
     end
-
   end
 end
