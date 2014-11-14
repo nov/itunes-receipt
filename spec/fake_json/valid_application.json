@@ -1,19 +1,22 @@
-{"status":0,
- "environment":"Sandbox",
- "receipt":{
-     "receipt_type":"ProductionSandbox",
-     "adam_id":0,
-     "bundle_id":"com.tekkinnovations.fars",
-     "application_version":"1.80",
-     "download_id":0,
-     "request_date":"2013-11-26 14:49:09 Etc/GMT",
-     "request_date_ms":"1385477349878",
-     "request_date_pst":"2013-11-26 06:49:09 America/Los_Angeles",
-     "original_purchase_date":"2013-08-01 07:00:00 Etc/GMT",
-     "original_purchase_date_ms":"1375340400000",
-     "original_purchase_date_pst":"2013-08-01 00:00:00 America/Los_Angeles",
-     "original_application_version":"1.0",
-     "in_app":[{"quantity":"1",
+{
+    "status":0,
+    "environment":"Sandbox",
+    "receipt":{
+        "receipt_type":"ProductionSandbox",
+        "adam_id":0,
+        "bundle_id":"com.tekkinnovations.fars",
+        "application_version":"1.80",
+        "download_id":0,
+        "request_date":"2013-11-26 14:49:09 Etc/GMT",
+        "request_date_ms":"1385477349878",
+        "request_date_pst":"2013-11-26 06:49:09 America/Los_Angeles",
+        "original_purchase_date":"2013-08-01 07:00:00 Etc/GMT",
+        "original_purchase_date_ms":"1375340400000",
+        "original_purchase_date_pst":"2013-08-01 00:00:00 America/Los_Angeles",
+        "original_application_version":"1.0",
+        "in_app":[
+            {
+                "quantity":"1",
                 "product_id":"com.tekkinnovations.fars.subscription.6.months",
                 "transaction_id":"1000000091176126",
                 "original_transaction_id":"1000000091176126",
@@ -23,8 +26,10 @@
                 "original_purchase_date":"2013-10-24 04:55:56 Etc/GMT",
                 "original_purchase_date_ms":"1382590556000",
                 "original_purchase_date_pst":"2013-10-23 21:55:56 America/Los_Angeles",
-                "is_trial_period":"false"},
-               {"quantity":"1",
+                "is_trial_period":"false"
+            },
+            {
+                "quantity":"1",
                 "product_id":"com.tekkinnovations.fars.subscription.3.months",
                 "transaction_id":"1000000091221097",
                 "original_transaction_id":"1000000091221097",
@@ -34,5 +39,8 @@
                 "original_purchase_date":"2013-10-24 09:40:22 Etc/GMT",
                 "original_purchase_date_ms":"1382607622000",
                 "original_purchase_date_pst":"2013-10-24 02:40:22 America/Los_Angeles",
-                "is_trial_period":"false"}
-]}}
+                "is_trial_period":"false"
+            }
+        ]
+    }
+}
