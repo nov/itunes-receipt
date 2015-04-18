@@ -1,0 +1,60 @@
+{
+  "status": 0,
+  "environment": "Sandbox",
+  "receipt": {
+    "receipt_type": "ProductionSandbox",
+    "adam_id": 0,
+    "app_item_id": 0,
+    "bundle_id": "com.example.app",
+    "application_version": "20150409165905",
+    "download_id": 0,
+    "version_external_identifier": 0,
+    "request_date": "2015-04-17 07:04:13 Etc/GMT",
+    "request_date_ms": "1429254253231",
+    "request_date_pst": "2015-04-17 00:04:13 America/Los_Angeles",
+    "original_purchase_date": "2013-08-01 07:00:00 Etc/GMT",
+    "original_purchase_date_ms": "1375340400000",
+    "original_purchase_date_pst": "2013-08-01 00:00:00 America/Los_Angeles",
+    "original_application_version": "1.0",
+    "in_app": [
+      {
+        "quantity": "1",
+        "product_id": "com.example.app.starter.1.month",
+        "transaction_id": "1000000152094757",
+        "original_transaction_id": "1000000152094757",
+        "purchase_date": "2015-04-17 07:03:59 Etc/GMT",
+        "purchase_date_ms": "1429254239000",
+        "purchase_date_pst": "2015-04-17 00:03:59 America/Los_Angeles",
+        "original_purchase_date": "2015-04-17 07:04:00 Etc/GMT",
+        "original_purchase_date_ms": "1429254240000",
+        "original_purchase_date_pst": "2015-04-17 00:04:00 America/Los_Angeles",
+        "expires_date": "2015-04-17 07:08:59 Etc/GMT",
+        "expires_date_ms": "1429254539000",
+        "expires_date_pst": "2015-04-17 00:08:59 America/Los_Angeles",
+        "web_order_line_item_id": "1000000029497079",
+        "is_trial_period": "false"
+      }
+    ]
+  },
+  "latest_receipt_info": [
+    {
+      "quantity": "1",
+      "product_id": "com.example.app.starter.1.month",
+      "transaction_id": "1000000152094757",
+      "original_transaction_id": "1000000152094757",
+      "purchase_date": "2015-04-17 07:03:59 Etc/GMT",
+      "purchase_date_ms": "1429254239000",
+      "purchase_date_pst": "2015-04-17 00:03:59 America/Los_Angeles",
+      "original_purchase_date": "2015-04-17 07:04:00 Etc/GMT",
+      "original_purchase_date_ms": "1429254240000",
+      "original_purchase_date_pst": "2015-04-17 00:04:00 America/Los_Angeles",
+      "expires_date": "2015-04-17 07:08:59 Etc/GMT",
+      "expires_date_ms": "1429254539000",
+      "expires_date_pst": "2015-04-17 00:08:59 America/Los_Angeles",
+      "web_order_line_item_id": "1000000029497079",
+      "is_trial_period": "false"
+    }
+  ],
+  "latest_receipt": "MIIUEgYJKoZIhvcNAQcCoIIUAzCCE/ArBO",
+  "itunes_env": "sandbox"
+}
