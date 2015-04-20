@@ -148,6 +148,30 @@ module Itunes
       itunes_env == :sandbox
     end
 
+    def latest_in_app_by_product_id(product_id)
+      @in_app.sort_by {|receipt| receipt.purchase_date }.find {|receipt| receipt.product_id == product_id }
+    end
+
+    def find_all_by_product_id(product_id)
+      @in_app.select {|receipt| receipt.product_id == product_id }
+    end
+
+    def latest_in_app
+      @in_app.max_by {|receipt| receipt.purchase_date }
+    end
+
+    def oldest_in_app
+      @in_app.min_by {|receipt| receipt.purchase_date }
+    end
+
+    def expired_in_app?
+      @in_app.all? {|receipt| receipt.expires_date < Time.now.utc }
+    end
+
+    def original_receipt_in_app
+      @in_app.reject {|receipt| receipt.original.nil? }.find {|receipt| receipt.original.transaction_id == receipt.transaction_id }
+    end
+
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
       request_data = {:'receipt-data' => receipt_data}
       request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret

@@ -327,6 +327,61 @@ describe Itunes::Receipt do
 
       it { expect(receipt.in_app.size).to eq(6) }
       it_behaves_like "auto-renew subscription shared example"
+
+      describe '#latest_in_app_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.latest_in_app_by_product_id('com.example.app.invalid')).to be_nil }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.latest_in_app_by_product_id('com.example.app.starter.1.month')).to be_truthy.and be_an_instance_of(Itunes::Receipt) }
+        end
+      end
+
+      describe '#find_all_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.find_all_by_product_id('com.example.app.invalid').size).to eq 0 }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.find_all_by_product_id('com.example.app.starter.1.month').size).to eq 6 }
+        end
+      end
+
+      describe '#latest_in_app' do
+        subject(:latest_in_app) { receipt.latest_in_app }
+        it { expect(latest_in_app).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { latest_in_app.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be > receipt.in_app.sort_by {|a| a.purchase_date }.reverse[1].purchase_date }
+        end
+      end
+
+      describe '#oldest_in_app' do
+        subject(:oldest_in_app) { receipt.oldest_in_app }
+        it { expect(oldest_in_app).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { oldest_in_app.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be < receipt.in_app.sort_by {|a| a.purchase_date }[1].purchase_date }
+        end
+      end
+
+      describe '#expired_in_app?' do
+        it { expect(receipt.expired_in_app?).to be_truthy }
+      end
+
+      describe '#original_receipt_in_app' do
+        subject(:original_receipt) { receipt.original_receipt_in_app }
+        it { expect(original_receipt).to be_instance_of(Itunes::Receipt) }
+
+        describe 'original_transaction_id' do
+          subject(:original_transaction_id) { original_receipt.original.transaction_id }
+          it { expect(original_receipt.transaction_id).to eq original_transaction_id }
+          it { expect(receipt.latest_in_app.transaction_id).not_to eq original_transaction_id }
+        end
+      end
     end
   end
 end
