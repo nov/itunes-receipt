@@ -20,6 +20,7 @@ module Itunes
     class VerificationFailed < StandardError
       attr_reader :status
       def initialize(attributes = {})
+        @raw_attribute = attributes
         @status = attributes[:status]
         super attributes[:exception]
       end
