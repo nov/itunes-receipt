@@ -1,6 +1,21 @@
 require 'itunes'
 
 module Itunes
+  def convert_to_time(date_str)
+    time_obj = nil
+    if date_str
+      begin
+        Integer(date_str)
+        time_obj = Time.at(date_str.to_i / (date_str.length >= 13 ? 1000 : 1))
+      rescue ArgumentError
+        time_obj = Time.parse(date_str.sub('Etc/', ''))
+      end
+    end
+    time_obj
+  end
+
+  module_function :convert_to_time
+
   class Receipt
     class VerificationFailed < StandardError
       attr_reader :status
@@ -31,6 +46,7 @@ module Itunes
       :bvrs,
       :download_id,
       :expires_date,
+      :expires_date_ms,
       :in_app,
       :is_trial_period,
       :itunes_env,
@@ -47,9 +63,11 @@ module Itunes
       :request_date_pst,
       :transaction_id,
       :version_external_identifier,
+      :raw_attributes
     )
 
     def initialize(attributes = {})
+      @raw_attributes = attributes unless attributes[:status].nil?
       receipt_attributes = attributes.with_indifferent_access[:receipt]
       @adam_id = receipt_attributes[:adam_id]
       @app_item_id = receipt_attributes[:app_item_id]
@@ -58,29 +76,32 @@ module Itunes
       @bundle_id = receipt_attributes[:bundle_id]
       @bvrs = receipt_attributes[:bvrs]
       @download_id = receipt_attributes[:download_id]
-      @expires_date = if receipt_attributes[:expires_date]
-        Time.at(receipt_attributes[:expires_date].to_i / 1000)
-      end
-      @in_app = if receipt_attributes[:in_app]
-        receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
+      @expires_date = Itunes::convert_to_time(receipt_attributes[:expires_date]) if receipt_attributes[:expires_date]
+      @expires_date_ms = if receipt_attributes[:expires_date_ms]
+        receipt_attributes[:expires_date_ms].to_i
       end
       @is_trial_period = if receipt_attributes[:is_trial_period]
         receipt_attributes[:is_trial_period] == "true"
       end
       @itunes_env = attributes[:itunes_env] || Itunes.itunes_env
+      @in_app = if receipt_attributes[:in_app]
+        receipt_attributes[:in_app].map { |ia| self.class.new({receipt: ia.merge(itunes_env: @itunes_env)}) }
+      end
       @latest = case attributes[:latest_receipt_info]
       when Hash
         self.class.new(
           :receipt        => attributes[:latest_receipt_info],
           :latest_receipt => attributes[:latest_receipt],
-          :receipt_type   => :latest
+          :receipt_type   => :latest,
+          :itunes_env     => @itunes_env
         )
       when Array
         attributes[:latest_receipt_info].collect do |latest_receipt_info|
           self.class.new(
             :receipt        => latest_receipt_info,
             :latest_receipt => attributes[:latest_receipt],
-            :receipt_type   => :latest
+            :receipt_type   => :latest,
+            :itunes_env     => @itunes_env
           )
         end
       end
@@ -90,13 +111,12 @@ module Itunes
           :purchase_date       => receipt_attributes[:original_purchase_date],
           :purchase_date_ms    => receipt_attributes[:original_purchase_date_ms],
           :purchase_date_pst   => receipt_attributes[:original_purchase_date_pst],
-          :application_version => receipt_attributes[:original_application_version]
+          :application_version => receipt_attributes[:original_application_version],
+          :itunes_env          => @itunes_env
         })
       end
       @product_id = receipt_attributes[:product_id]
-      @purchase_date = if receipt_attributes[:purchase_date]
-        Time.parse receipt_attributes[:purchase_date].sub('Etc/GMT', 'GMT')
-      end
+      @purchase_date = Itunes::convert_to_time(receipt_attributes[:purchase_date]) if receipt_attributes[:purchase_date]
       @purchase_date_ms = if receipt_attributes[:purchase_date_ms]
         receipt_attributes[:purchase_date_ms].to_i
       end
@@ -109,9 +129,7 @@ module Itunes
       @receipt_data = if attributes[:receipt_type] == :latest
         attributes[:latest_receipt]
       end
-      @request_date = if receipt_attributes[:request_date]
-        Time.parse receipt_attributes[:request_date].sub('Etc/', '')
-      end
+      @request_date = Itunes::convert_to_time(receipt_attributes[:request_date]) if receipt_attributes[:request_date]
       @request_date_ms = if receipt_attributes[:request_date_ms]
         receipt_attributes[:request_date_ms].to_i
       end
