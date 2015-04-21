@@ -150,7 +150,7 @@ module Itunes
     end
 
     def latest_in_app_by_product_id(product_id)
-      @in_app.sort_by {|receipt| receipt.purchase_date }.find {|receipt| receipt.product_id == product_id }
+      @in_app.sort_by(&:purchase_date).reverse.find {|receipt| receipt.product_id == product_id }
     end
 
     def find_all_by_product_id(product_id)
@@ -158,11 +158,11 @@ module Itunes
     end
 
     def latest_in_app
-      @in_app.max_by {|receipt| receipt.purchase_date }
+      @in_app.max_by(&:purchase_date)
     end
 
     def oldest_in_app
-      @in_app.min_by {|receipt| receipt.purchase_date }
+      @in_app.min_by(&:purchase_date)
     end
 
     def expired_in_app?
