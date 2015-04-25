@@ -154,7 +154,7 @@ module Itunes
     end
 
     def find_all_by_product_id(product_id)
-      @in_app.select {|receipt| receipt.product_id == product_id }
+      @in_app.sort_by(&:purchase_date).reverse.select {|receipt| receipt.product_id == product_id }
     end
 
     def latest_in_app
