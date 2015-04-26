@@ -64,7 +64,8 @@ module Itunes
       :request_date_pst,
       :transaction_id,
       :version_external_identifier,
-      :raw_attributes
+      :raw_attributes,
+      :cancellation_date
     )
 
     def initialize(attributes = {})
@@ -81,6 +82,7 @@ module Itunes
       @expires_date_ms = if receipt_attributes[:expires_date_ms]
         receipt_attributes[:expires_date_ms].to_i
       end
+      @cancellation_date = Itunes::convert_to_time(receipt_attributes[:cancellation_date]) if receipt_attributes[:cancellation_date]
       @is_trial_period = if receipt_attributes[:is_trial_period]
         receipt_attributes[:is_trial_period] == "true"
       end
