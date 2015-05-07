@@ -51,10 +51,10 @@ describe Itunes::Receipt do
         context 'when sandbox receipt accepted explicitly' do
           it 'should try and verify the receipt against the sandbox ' do
             receipt = Itunes::Receipt.verify! 'sandboxed', :allow_sandbox_receipt
-            receipt.should be_instance_of Itunes::Receipt
-            receipt.transaction_id.should == '1000000001479608'
-            receipt.itunes_env.should == :sandbox
-            receipt.sandbox?.should eq true
+            expect(receipt).to be_an_instance_of(Itunes::Receipt)
+            expect(receipt.transaction_id).to eq '1000000001479608'
+            expect(receipt.itunes_env).to eq :sandbox
+            expect(receipt.sandbox?).to eq true
           end
         end
 
@@ -245,6 +245,196 @@ describe Itunes::Receipt do
           receipt.latest.each do |element|
             element.should be_a Itunes::Receipt
           end
+        end
+      end
+    end
+
+    ##### MARK: Above iOS 7
+
+    shared_examples "auto-renew subscription shared example" do
+      it 'should success with sandbox access' do
+        expect(receipt.sandbox?).to eq true
+      end
+
+      it { expect(receipt).to be_an_instance_of(Itunes::Receipt) }
+
+      describe '#raw_attributes' do
+        it { expect(receipt.raw_attributes).not_to be_nil }
+
+        describe 'status in the attributes' do
+          it { expect(receipt.raw_attributes[:status]).to eq 0 }
+        end
+      end
+
+      describe '#bundle_id' do
+        it { expect(receipt.bundle_id).to eq 'com.example.app' }
+      end
+
+      describe '#in_app' do
+        subject(:in_app) { receipt.in_app }
+
+        describe '#quantity' do
+          it { in_app.each { |item| expect(item.quantity).to eq 1 } }
+        end
+
+        describe '#product_id' do
+          it { in_app.each { |item| expect(item.product_id).to eq 'com.example.app.starter.1.month' } }
+        end
+
+        describe '#original.transaction_id' do
+          it { expect(Set.new(in_app.map {|item| item.original.transaction_id }).size).to eq 1 }
+        end
+
+        describe '#transaction_id' do
+          it 'should include #original.transaction_id' do
+            expect(in_app.map {|item| item.transaction_id }).to include Set.new(in_app.map {|item| item.original.transaction_id }).first
+          end
+        end
+
+        describe '#purchase_date' do
+          it { in_app.each {|item| expect(item.purchase_date).to be_an_instance_of(Time) } }
+        end
+
+        describe '#expires_date' do
+          it { in_app.each {|item| expect(item.expires_date).to be_an_instance_of(Time) } }
+        end
+      end
+    end
+
+    context 'when first auto-renew subscrsption' do
+      before do
+          fake_json :sandboxed
+        sandbox_mode do
+          fake_json :autorenew_subscription_first
+        end
+      end
+
+      let(:receipt) { Itunes::Receipt.verify! 'autorenew_subscription_first', :allow_sandbox_receipt => true }
+
+      it { expect(receipt.in_app.size).to eq(1) }
+      it_behaves_like "auto-renew subscription shared example"
+    end
+
+    context 'when auto-renew subscriptions' do
+      before do
+          fake_json :sandboxed
+        sandbox_mode do
+          fake_json :autorenew_subscription_multiple
+        end
+      end
+
+      let(:receipt) { Itunes::Receipt.verify! 'autorenew_subscription_multiple', :allow_sandbox_receipt => true }
+
+      it { expect(receipt.in_app.size).to eq(6) }
+      it_behaves_like "auto-renew subscription shared example"
+
+      describe '#latest_in_app_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.latest_in_app_by_product_id('com.example.app.invalid')).to be_nil }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.latest_in_app_by_product_id('com.example.app.starter.1.month')).to be_truthy.and be_an_instance_of(Itunes::Receipt) }
+        end
+      end
+
+      describe '#find_all_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.find_all_by_product_id('com.example.app.invalid').size).to eq 0 }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.find_all_by_product_id('com.example.app.starter.1.month').size).to eq 6 }
+        end
+      end
+
+      describe '#latest_in_app' do
+        subject(:latest_in_app) { receipt.latest_in_app }
+        it { expect(latest_in_app).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { latest_in_app.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be > receipt.in_app.sort_by {|a| a.purchase_date }.reverse[1].purchase_date }
+        end
+      end
+
+      describe '#oldest_in_app' do
+        subject(:oldest_in_app) { receipt.oldest_in_app }
+        it { expect(oldest_in_app).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { oldest_in_app.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be < receipt.in_app.sort_by {|a| a.purchase_date }[1].purchase_date }
+        end
+      end
+
+      describe '#expired_in_app?' do
+        it { expect(receipt.expired_in_app?).to be_truthy }
+      end
+
+      describe '#original_receipt_in_app' do
+        subject(:original_receipt) { receipt.original_receipt_in_app }
+        it { expect(original_receipt).to be_instance_of(Itunes::Receipt) }
+
+        describe 'original_transaction_id' do
+          subject(:original_transaction_id) { original_receipt.original.transaction_id }
+          it { expect(original_receipt.transaction_id).to eq original_transaction_id }
+          it { expect(receipt.latest_in_app.transaction_id).not_to eq original_transaction_id }
+        end
+      end
+
+      describe '#latest_in_latest_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.latest_in_latest_by_product_id('com.example.app.invalid')).to be_nil }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.latest_in_latest_by_product_id('com.example.app.starter.1.month')).to be_truthy.and be_an_instance_of(Itunes::Receipt) }
+        end
+      end
+
+      describe '#find_all_in_latest_by_product_id' do
+        context 'when not match product' do
+          it { expect(receipt.find_all_in_latest_by_product_id('com.example.app.invalid').size).to eq 0 }
+        end
+
+        context 'when match product' do
+          it { expect(receipt.find_all_in_latest_by_product_id('com.example.app.starter.1.month').size).to eq 6 }
+        end
+      end
+
+      describe '#latest_in_latest' do
+        subject(:latest_in_latest) { receipt.latest_in_latest }
+        it { expect(latest_in_latest).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { latest_in_latest.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be > receipt.latest.sort_by(&:purchase_date).reverse[1].purchase_date }
+        end
+      end
+
+      describe '#oldest_in_latest' do
+        subject(:oldest_in_latest) { receipt.oldest_in_latest }
+        it { expect(oldest_in_latest).to be_instance_of(Itunes::Receipt) }
+
+        describe '#purchase_date' do
+          subject(:purchase_date) { oldest_in_latest.purchase_date }
+          it { expect(purchase_date).to eq(purchase_date).and be < receipt.latest.sort_by(&:purchase_date)[1].purchase_date }
+        end
+      end
+
+      describe '#expired_in_latest' do
+        it { expect(receipt.expired_in_latest?).to be_truthy }
+      end
+
+      describe '#original_receipt_in_latest' do
+        subject(:original_receipt) { receipt.original_receipt_in_latest }
+        it { expect(original_receipt).to be_instance_of(Itunes::Receipt) }
+
+        describe 'original_transaction_id' do
+          subject(:original_transaction_id) { original_receipt.original.transaction_id }
+          it { expect(original_receipt.transaction_id).to eq original_transaction_id }
+          it { expect(receipt.latest_in_latest.transaction_id).not_to eq original_transaction_id }
         end
       end
     end
