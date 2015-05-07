@@ -197,7 +197,6 @@ module Itunes
 
     def expired_in_latest?
       latests = @latest.is_a?(Hash) ? [@latest] : @latest
-      latests.min_by(&:purchase_date)
       latests.all? {|receipt| receipt.expires_date < Time.now.utc }
     end
 
