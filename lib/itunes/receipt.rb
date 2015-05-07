@@ -69,7 +69,8 @@ module Itunes
     )
 
     def initialize(attributes = {})
-      @raw_attributes = attributes unless attributes[:status].nil?
+      @raw_attributes = attributes if attributes.with_indifferent_access[:status].present?
+      attributes = attributes.with_indifferent_access
       receipt_attributes = attributes.with_indifferent_access[:receipt]
       @adam_id = receipt_attributes[:adam_id]
       @app_item_id = receipt_attributes[:app_item_id]
