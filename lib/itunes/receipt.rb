@@ -175,6 +175,37 @@ module Itunes
       @in_app.reject {|receipt| receipt.original.nil? }.find {|receipt| receipt.original.transaction_id == receipt.transaction_id }
     end
 
+    def latest_in_latest_by_product_id(product_id)
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.sort_by(&:purchase_date).reverse.find {|receipt| receipt.product_id == product_id }
+    end
+
+    def find_all_in_latest_by_product_id(product_id)
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.sort_by(&:purchase_date).reverse.select {|receipt| receipt.product_id == product_id }
+    end
+
+    def latest_in_latest
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.max_by(&:purchase_date)
+    end
+
+    def oldest_in_latest
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.min_by(&:purchase_date)
+    end
+
+    def expired_in_latest?
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.min_by(&:purchase_date)
+      latests.all? {|receipt| receipt.expires_date < Time.now.utc }
+    end
+
+    def original_receipt_in_latest
+      latests = @latest.is_a?(Hash) ? [@latest] : @latest
+      latests.reject {|receipt| receipt.original.nil? }.find {|receipt| receipt.original.transaction_id == receipt.transaction_id }
+    end
+
     def self.verify!(receipt_data, allow_sandbox_receipt = false)
       request_data = {:'receipt-data' => receipt_data}
       request_data.merge!(:password => Itunes.shared_secret) if Itunes.shared_secret
