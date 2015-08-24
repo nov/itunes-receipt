@@ -31,6 +31,9 @@ module Itunes
       :bvrs,
       :download_id,
       :expires_date,
+      :cancellation_date,
+      :cancellation_date_ms,
+      :cancellation_date_pst,
       :in_app,
       :is_trial_period,
       :itunes_env,
@@ -60,6 +63,15 @@ module Itunes
       @download_id = receipt_attributes[:download_id]
       @expires_date = if receipt_attributes[:expires_date]
         Time.at(receipt_attributes[:expires_date].to_i / 1000)
+      end
+      @cancellation_date = if receipt_attributes[:cancellation_date]
+        Time.parse receipt_attributes[:cancellation_date].sub('Etc/GMT', 'GMT')
+      end
+      @cancellation_date_ms = if receipt_attributes[:cancellation_date_ms]
+        receipt_attributes[:cancellation_date_ms].to_i
+      end
+      @cancellation_date_pst = if receipt_attributes[:cancellation_date_pst]
+        Time.parse receipt_attributes[:cancellation_date_pst].sub('America/Los_Angeles', 'PST')
       end
       @in_app = if receipt_attributes[:in_app]
         receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
