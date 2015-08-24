@@ -31,6 +31,8 @@ module Itunes
       :bvrs,
       :download_id,
       :expires_date,
+      :expires_date_ms,
+      :expires_date_pst,
       :cancellation_date,
       :cancellation_date_ms,
       :cancellation_date_pst,
@@ -62,7 +64,13 @@ module Itunes
       @bvrs = receipt_attributes[:bvrs]
       @download_id = receipt_attributes[:download_id]
       @expires_date = if receipt_attributes[:expires_date]
-        Time.at(receipt_attributes[:expires_date].to_i / 1000)
+        Time.parse receipt_attributes[:expires_date].sub('Etc/GMT', 'GMT')
+      end
+      @expires_date_ms = if receipt_attributes[:expires_date_ms]
+        receipt_attributes[:expires_date_ms].to_i
+      end
+      @expires_date_pst = if receipt_attributes[:expires_date_pst]
+        Time.parse receipt_attributes[:expires_date_pst].sub('America/Los_Angeles', 'PST')
       end
       @cancellation_date = if receipt_attributes[:cancellation_date]
         Time.parse receipt_attributes[:cancellation_date].sub('Etc/GMT', 'GMT')
