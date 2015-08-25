@@ -95,6 +95,7 @@ describe Itunes::Receipt do
         receipt.receipt_data.should be_nil
         receipt.cancellation_date.should be_nil
         receipt.itunes_env.should == :production
+        receipt.web_order_line_item_id.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -148,6 +149,7 @@ describe Itunes::Receipt do
         receipt.cancellation_date.should be_nil
         receipt.receipt_data.should be_nil
         receipt.itunes_env.should == :production
+        receipt.web_order_line_item_id.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -177,6 +179,7 @@ describe Itunes::Receipt do
         receipt.expires_date.should == Time.utc(2012, 10, 13, 19, 45, 8)
         receipt.cancellation_date.should be_nil
         receipt.receipt_data.should be_nil
+        receipt.web_order_line_item_id.should == '1000000026553289'
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -196,6 +199,7 @@ describe Itunes::Receipt do
         latest.original.transaction_id.should == original_transaction_id
         latest.original.purchase_date.should == original_purchase_date
         latest.receipt_data.should == 'junk='
+        receipt.web_order_line_item_id.should == '1000000026553289'
 
         # Those attributes are not returned from iTunes Connect Sandbox
         latest.app_item_id.should be_nil
