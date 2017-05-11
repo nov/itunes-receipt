@@ -90,9 +90,12 @@ describe Itunes::Receipt do
         receipt.original.quantity.should be_nil
         receipt.original.transaction_id.should == '1000000001479608'
         receipt.original.purchase_date.should == Time.utc(2011, 2, 17, 6, 20, 57)
+        receipt.original.cancellation_date.should be_nil
         receipt.expires_date.should be_nil
         receipt.receipt_data.should be_nil
+        receipt.cancellation_date.should be_nil
         receipt.itunes_env.should == :production
+        receipt.web_order_line_item_id.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -143,8 +146,10 @@ describe Itunes::Receipt do
         receipt.bid.should be_nil
         receipt.bvrs.should be_nil
         receipt.expires_date.should be_nil
+        receipt.cancellation_date.should be_nil
         receipt.receipt_data.should be_nil
         receipt.itunes_env.should == :production
+        receipt.web_order_line_item_id.should be_nil
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -172,7 +177,9 @@ describe Itunes::Receipt do
         receipt.original.transaction_id.should == original_transaction_id
         receipt.original.purchase_date.should == original_purchase_date
         receipt.expires_date.should == Time.utc(2012, 10, 13, 19, 45, 8)
+        receipt.cancellation_date.should be_nil
         receipt.receipt_data.should be_nil
+        receipt.web_order_line_item_id.should == '1000000026553289'
 
         # Those attributes are not returned from iTunes Connect Sandbox
         receipt.app_item_id.should be_nil
@@ -185,12 +192,14 @@ describe Itunes::Receipt do
         latest.transaction_id.should == '1000000052076747'
         latest.purchase_date.should == Time.utc(2012, 10, 13, 19, 40, 8)
         latest.expires_date.should == Time.utc(2012, 10, 13, 19, 50, 8) # five minutes after the "old" receipt
+        latest.cancellation_date.should be_nil
         latest.bid.should == 'com.notkeepingitreal.fizzbuzz'
         latest.bvrs.should == '1.0'
         latest.original.quantity.should be_nil
         latest.original.transaction_id.should == original_transaction_id
         latest.original.purchase_date.should == original_purchase_date
         latest.receipt_data.should == 'junk='
+        receipt.web_order_line_item_id.should == '1000000026553289'
 
         # Those attributes are not returned from iTunes Connect Sandbox
         latest.app_item_id.should be_nil
@@ -209,6 +218,21 @@ describe Itunes::Receipt do
         end.to raise_error Itunes::Receipt::ExpiredReceiptReceived do |e|
           e.receipt.should_not be_nil
         end
+      end
+
+    end
+
+    context 'when cancelled autorenew subscription' do
+      before do
+        fake_json :autorenew_subscription_cancelled
+      end
+
+      it 'should return valid Receipt instance for autorenew subscription, with the cancellation_date field set' do
+        receipt = Itunes::Receipt.verify! 'autorenew_subscription_cancelled'
+        receipt.should be_instance_of Itunes::Receipt
+        receipt.purchase_date.should == Time.utc(2012, 10, 13, 19, 40, 8)
+        receipt.expires_date.should == Time.utc(2012, 10, 13, 19, 45, 8)
+        receipt.cancellation_date.should == Time.utc(2012, 10, 13, 19, 42, 8) # user cancelled via Apple Customer Support 2 minutes after their subscription began
       end
 
     end

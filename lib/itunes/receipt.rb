@@ -29,8 +29,13 @@ module Itunes
       :bid,
       :bundle_id,
       :bvrs,
+      :cancellation_date,
+      :cancellation_date_ms,
+      :cancellation_date_pst,
       :download_id,
       :expires_date,
+      :expires_date_ms,
+      :expires_date_pst,
       :in_app,
       :is_trial_period,
       :itunes_env,
@@ -47,6 +52,7 @@ module Itunes
       :request_date_pst,
       :transaction_id,
       :version_external_identifier,
+      :web_order_line_item_id
     )
 
     def initialize(attributes = {})
@@ -57,9 +63,24 @@ module Itunes
       @bid = receipt_attributes[:bid]
       @bundle_id = receipt_attributes[:bundle_id]
       @bvrs = receipt_attributes[:bvrs]
+      @cancellation_date = if receipt_attributes[:cancellation_date]
+        Time.parse receipt_attributes[:cancellation_date].sub('Etc/GMT', 'GMT')
+      end
+      @cancellation_date_ms = if receipt_attributes[:cancellation_date_ms]
+        receipt_attributes[:cancellation_date_ms].to_i
+      end
+      @cancellation_date_pst = if receipt_attributes[:cancellation_date_pst]
+        Time.parse receipt_attributes[:cancellation_date_pst].sub('America/Los_Angeles', 'PST')
+      end
       @download_id = receipt_attributes[:download_id]
       @expires_date = if receipt_attributes[:expires_date]
-        Time.at(receipt_attributes[:expires_date].to_i / 1000)
+        Time.parse receipt_attributes[:expires_date].sub('Etc/GMT', 'GMT')
+      end
+      @expires_date_ms = if receipt_attributes[:expires_date_ms]
+        receipt_attributes[:expires_date_ms].to_i
+      end
+      @expires_date_pst = if receipt_attributes[:expires_date_pst]
+        Time.parse receipt_attributes[:expires_date_pst].sub('America/Los_Angeles', 'PST')
       end
       @in_app = if receipt_attributes[:in_app]
         receipt_attributes[:in_app].map { |ia| self.class.new(:receipt => ia) }
@@ -120,6 +141,7 @@ module Itunes
       end
       @transaction_id = receipt_attributes[:transaction_id]
       @version_external_identifier = receipt_attributes[:version_external_identifier]
+      @web_order_line_item_id = receipt_attributes[:web_order_line_item_id]
     end
 
     def application_receipt?
